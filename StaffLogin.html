@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LaMu Hospital — Staff Login</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #F5F7F6;
+    --surface: #FFFFFF;
+    --surface-2: #EEF2F1;
+    --ink: #16262A;
+    --ink-soft: #4B5F63;
+    --ink-faint: #7C8D90;
+    --primary: #044046;
+    --primary-dark: #032928;
+    --line: #DFE6E4;
+    --danger: #C1443B;
+    --danger-tint: #FBEAE8;
+    --shadow: 0 1px 2px rgba(10,30,30,.06), 0 8px 24px -12px rgba(10,30,30,.12);
+    --font-display: 'IBM Plex Sans', -apple-system, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-display);
+    font-size:15px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  @media (prefers-reduced-motion: reduce){ *{transition:none!important;} }
+  button, input{ font-family:inherit; font-size:inherit; color:inherit; }
+  button{cursor:pointer;}
+  :focus-visible{outline:2px solid var(--primary); outline-offset:2px;}
+
+  .login-shell{
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:40px 20px;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(13,92,99,.07), transparent 40%),
+      radial-gradient(circle at 85% 80%, rgba(217,142,59,.08), transparent 40%),
+      var(--bg);
+  }
+
+  .login-card{
+    width:100%; max-width:400px; background:var(--surface); border:1px solid var(--line);
+    border-radius:14px; padding:30px 28px; box-shadow:var(--shadow);
+  }
+
+  .back-link{
+    display:inline-block; margin-bottom:16px; font-size:13px; color:var(--ink-soft);
+    font-weight:600; text-decoration:none;
+  }
+  .back-link:hover{ color:var(--ink); }
+
+  .brand-mark{
+    width:40px; height:40px; border-radius:10px; background:var(--primary);
+    display:flex; align-items:center; justify-content:center; color:#fff;
+    font-size:17px; font-weight:700; margin-bottom:14px;
+  }
+
+  .login-card h2{margin:0 0 4px; font-size:20px;}
+  .login-card .lead{color:var(--ink-soft); font-size:13.5px; margin:0 0 22px;}
+
+  .error-msg{
+    background:var(--danger-tint); color:var(--danger); padding:9px 12px;
+    border-radius:8px; font-size:13px; margin-bottom:14px; display:none;
+  }
+  .error-msg.show{ display:block; }
+
+  .field{margin-bottom:14px;}
+  .field label{
+    display:block; font-size:12.5px; font-weight:600; color:var(--ink-soft);
+    margin-bottom:5px; text-transform:uppercase; letter-spacing:.02em;
+  }
+  .field input{
+    width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:8px;
+    background:var(--bg); transition:border-color .15s;
+  }
+  .field input:focus{ border-color:var(--primary); background:var(--surface); }
+
+  .btn{
+    border:1px solid var(--line); background:var(--surface); color:var(--ink);
+    padding:9px 16px; border-radius:8px; font-weight:600; font-size:13.5px;
+    transition:border-color .15s, background .15s;
+  }
+  .btn-primary{background:var(--primary); border-color:var(--primary); color:#fff;}
+  .btn-primary:hover{background:var(--primary-dark); border-color:var(--primary-dark);}
+  .btn-block{width:100%;}
+
+  .hint-box{
+    margin-top:18px; padding:12px 14px; background:var(--surface-2); border-radius:8px;
+    font-size:12px; color:var(--ink-soft); font-family:var(--font-mono); line-height:1.7;
+  }
+  .hint-box strong{color:var(--ink); font-family:var(--font-display);}
+</style>
+</head>
+<body>
+
+  <div class="login-shell">
+    <div class="login-card">
+      <a href="landing-page.html" class="back-link">← Back</a>
+
+      <div class="brand-mark">LM</div>
+      <h2>Staff Sign In</h2>
+      <p class="lead">Role based access.</p>
+
+      <div class="error-msg" id="loginError">Invalid Username or Password,Refer to the demo below.</div>
+
+      <form id="staffLoginForm">
+        <div class="field">
+          <label for="sf-user">LoginID</label>
+          <input id="sf-user" type="text" autocomplete="username" placeholder="e.g. reception" required>
+        </div>
+        <div class="field">
+          <label for="sf-pass">Password</label>
+          <input id="sf-pass" type="password" autocomplete="current-password" placeholder="••••••••" required>
+        </div>
+        <button class="btn btn-primary btn-block" type="submit">Log in</button>
+      </form>
+
+      <div class="hint-box">
+        <strong>Demo accounts</strong> (password: 1234)<br>
+        Receptionist: reception<br>
+        Doctors: dr.khan · dr.syed · dr.iyer · dr.mohammed · dr.sharma · dr.sheikh · dr.kumar
+      </div>
+    </div>
+  </div>
+
+<script>
+ 
+  const STAFF_ACCOUNTS = [
+    { username:'reception', password:'1234', role:'receptionist' },
+    { username:'dr.khan',    password:'1234', role:'doctor' },
+    { username:'dr.syed',  password:'1234', role:'doctor' },
+    { username:'dr.iyer',   password:'1234', role:'doctor' },
+    { username:'dr.mohammed', password:'1234', role:'doctor' },
+    { username:'dr.sharma',   password:'1234', role:'doctor' },
+    { username:'dr.sheikh', password:'1234', role:'doctor' },
+    { username:'dr.kumar',    password:'1234', role:'doctor' },
+  ];
+
+  document.getElementById('staffLoginForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const user = document.getElementById('sf-user').value.trim().toLowerCase();
+    const pass = document.getElementById('sf-pass').value;
+    const errorBox = document.getElementById('loginError');
+
+    const account = STAFF_ACCOUNTS.find(a => a.username === user && a.password === pass);
+    if(!account){
+      errorBox.classList.add('show');
+      return;
+    }
+    errorBox.classList.remove('show');
+
+    // Route based on role — swap these for your real page names.
+    if(account.role === 'receptionist'){
+      window.location.href = 'receptionist.html';
+    } else {
+      window.location.href = 'doctor.html';
+    }
+  });
+</script>
+
+</body>
+</html>
