@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LaMu Hospital — Ward Availability</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0B0D10;
+    --surface: #15181C;
+    --surface-hover: #1A1E23;
+    --ink: #ECEDEF;
+    --ink-soft: #A7AEB6;
+    --ink-faint: #676E76;
+    --line: #24282E;
+    --line-strong: #33383F;
+    --accent: #4FAE97;
+    --accent-tint: rgba(79,174,151,.14);
+    --success: #5CBE93;
+    --warning: #D9A54F;
+    --warning-tint: rgba(217,165,79,.14);
+    --danger: #D97A72;
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+    --ease: cubic-bezier(.16,.8,.3,1);
+  }
+  :root[data-theme="light"]{
+    --bg: #FAFAFA;
+    --surface: #FFFFFF;
+    --surface-hover: #F4F5F4;
+    --ink: #111318;
+    --ink-soft: #5C6370;
+    --ink-faint: #9AA1AC;
+    --line: #E7E8EC;
+    --line-strong: #D8DADF;
+    --accent: #1C4F45;
+    --accent-tint: #E9F1EE;
+    --success: #2E7D5B;
+    --warning: #B8853A;
+    --warning-tint: #F7EEE0;
+    --danger: #A23B34;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg); color:var(--ink); font-family:var(--font-body); font-size:15px; line-height:1.6;
+    -webkit-font-smoothing:antialiased; min-height:100vh; display:flex; flex-direction:column;
+    transition:background .35s var(--ease), color .35s var(--ease);
+  }
+  @media (prefers-reduced-motion: reduce){ *{animation:none!important; transition:none!important;} }
+  button{ font-family:inherit; font-size:inherit; color:inherit; cursor:pointer; }
+  :focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+
+  .wrap{max-width:960px; margin:0 auto; padding:0 24px;}
+
+  /* Top bar */
+  .topbar{ background:var(--surface); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:20; }
+  .topbar-inner{
+    max-width:960px; margin:0 auto; padding:16px 24px;
+    display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;
+  }
+  .brand{display:flex; align-items:center; gap:11px;}
+  .brand-mark{
+    width:34px; height:34px; border-radius:50%; border:1px solid var(--line-strong);
+    display:flex; align-items:center; justify-content:center; font-family:var(--font-display);
+    font-size:13px; font-weight:600; flex-shrink:0;
+  }
+  .brand-name{ font-family:var(--font-display); font-weight:500; font-size:16px; letter-spacing:-.005em; }
+
+  .tabs{display:flex; gap:22px;}
+  .tab{
+    font-size:13.5px; font-weight:500; color:var(--ink-faint); text-decoration:none;
+    padding:6px 0; position:relative;
+  }
+  .tab::after{
+    content:''; position:absolute; left:0; right:0; bottom:-1px; height:1.5px; background:var(--accent);
+    transform:scaleX(0); transition:transform .25s var(--ease); transform-origin:left;
+  }
+  .tab:hover{ color:var(--ink); }
+  .tab.active{ color:var(--ink); }
+  .tab.active::after{ transform:scaleX(1); }
+
+  .topbar-right{display:flex; align-items:center; gap:10px;}
+  .btn{
+    border:1px solid var(--line-strong); background:var(--surface); color:var(--ink);
+    padding:8px 15px; border-radius:8px; font-weight:600; font-size:13px;
+    transition:border-color .2s var(--ease), background .2s var(--ease); text-decoration:none; display:inline-block;
+  }
+  .btn:hover{ border-color:var(--accent); background:var(--accent-tint); }
+  .icon-btn{
+    width:34px; height:34px; border-radius:50%; border:1px solid var(--line-strong); background:var(--surface);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    transition:border-color .2s var(--ease), background .2s var(--ease);
+  }
+  .icon-btn:hover{ border-color:var(--accent); background:var(--accent-tint); }
+  .icon-btn svg{ width:15px; height:15px; stroke:var(--ink); }
+  .icon-btn .icon-sun{ display:none; }
+  :root[data-theme="light"] .icon-btn .icon-moon{ display:none; }
+  :root[data-theme="light"] .icon-btn .icon-sun{ display:block; }
+
+  /* Main */
+  .main{flex:1; padding:56px 0 72px;}
+
+  .page-head{ margin-bottom:40px; }
+  .page-head .eyebrow{
+    font-family:var(--font-mono); font-size:11px; font-weight:500; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--ink-faint); margin-bottom:10px;
+  }
+  .page-head h1{
+    font-family:var(--font-display); font-weight:500; font-size:clamp(26px,3.4vw,34px);
+    letter-spacing:-.01em; margin:0 0 8px;
+  }
+  .page-head p{ margin:0; color:var(--ink-soft); font-size:14.5px; max-width:46ch; }
+
+  /* Date scroller — minimal underline style */
+  .date-rail{ margin-bottom:36px; }
+  .date-rail-label{ font-size:12px; color:var(--ink-faint); margin-bottom:10px; }
+  .date-scroller{display:flex; gap:2px; overflow-x:auto; -webkit-overflow-scrolling:touch; border-bottom:1px solid var(--line);}
+  .date-scroller::-webkit-scrollbar{ height:0; }
+  .date-pill{
+    flex:0 0 auto; min-width:52px; padding:8px 4px 10px; text-align:center; background:none; border:none;
+    border-bottom:1.5px solid transparent; margin-bottom:-1px; transition:border-color .2s var(--ease);
+  }
+  .date-pill .dow{display:block; font-size:10px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.03em; margin-bottom:3px;}
+  .date-pill .dnum{display:block; font-weight:500; font-size:13.5px; font-family:var(--font-mono); color:var(--ink-soft);}
+  .date-pill.active{ border-color:var(--accent); }
+  .date-pill.active .dnum{ color:var(--ink); font-weight:600; }
+  .date-pill:hover:not(.active){ border-color:var(--line-strong); }
+
+  .projection-flag{
+    display:inline-flex; align-items:center; gap:7px; font-size:12px; font-weight:500;
+    background:var(--warning-tint); color:var(--warning); padding:7px 13px; border-radius:999px; margin:16px 0 0;
+  }
+  .projection-flag .dot{width:5px; height:5px; border-radius:50%; background:var(--warning); flex-shrink:0;}
+
+  /* Ward cards — one clear hero number, quiet supporting detail */
+  .ward-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(210px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:14px; overflow:hidden; margin-top:28px;}
+  .ward-card{
+    background:var(--surface); padding:26px 24px;
+    opacity:0; transform:translateY(12px); transition:opacity .55s var(--ease), transform .55s var(--ease), background .2s var(--ease);
+  }
+  .ward-card.in-view{ opacity:1; transform:translateY(0); }
+  .ward-card:hover{ background:var(--surface-hover); }
+  .ward-card .ward-dept{font-size:10.5px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.07em; margin-bottom:14px;}
+  .ward-card .free-hero{
+    font-family:var(--font-display); font-weight:500; font-size:38px; line-height:1; letter-spacing:-.01em;
+    margin-bottom:2px;
+  }
+  .ward-card .free-hero.ok{ color:var(--success); }
+  .ward-card .free-hero.low{ color:var(--warning); }
+  .ward-card .free-hero.full{ color:var(--danger); }
+  .ward-card .free-label{ font-size:12px; color:var(--ink-faint); margin-bottom:16px; }
+  .capacity-track{ height:3px; border-radius:3px; background:var(--line); overflow:hidden; margin-bottom:10px; }
+  .capacity-fill{ height:100%; width:0%; border-radius:3px; transition:width .8s var(--ease); }
+  .capacity-fill.ok{ background:var(--success); }
+  .capacity-fill.low{ background:var(--warning); }
+  .capacity-fill.full{ background:var(--danger); }
+  .ward-card .ward-name{ font-size:13px; font-weight:600; }
+  .ward-card .ward-total{ font-size:11px; color:var(--ink-faint); font-family:var(--font-mono); }
+
+  footer{border-top:1px solid var(--line); padding:22px 0; text-align:center; font-size:11.5px; color:var(--ink-faint);}
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-mark">LM</div>
+        <div class="brand-name">LaMu Hospital</div>
+      </div>
+      <div class="tabs">
+        <a class="tab active" href="PublicDashboard.html">Wards</a>
+        <a class="tab" href="PublicLogin.html">Doctors</a>
+      </div>
+      <div class="topbar-right">
+        <a class="btn" href="LandingPage.html">Back to home</a>
+        <button class="icon-btn" id="themeToggle" aria-label="Toggle light and dark theme">
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/>
+          </svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4.2"/>
+            <path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="wrap">
+
+      <div class="page-head">
+        <div class="eyebrow">Live Capacity</div>
+        <h1>Ward availability</h1>
+        <p>Bed vacancy across every ward, updated in real time. Scroll the dates below to see projected availability ahead.</p>
+      </div>
+
+      <div class="date-rail">
+        <div class="date-rail-label" id="modeLabel">Today · live count</div>
+        <div class="date-scroller" id="dateScroller"></div>
+        <div id="projectionFlag"></div>
+      </div>
+
+      <div class="ward-grid" id="wardCards"></div>
+
+    </div>
+  </div>
+
+  <footer>LaMu Hospital · Public information portal · Figures update periodically</footer>
+
+<script>
+  /* ===== Theme ===== */
+  const root = document.documentElement;
+  const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+  root.setAttribute('data-theme', prefersLight ? 'light' : 'dark');
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    root.setAttribute('data-theme', root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  });
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ===== Static demo data — replace with data fetched from the backend ===== */
+  const WARDS = [
+    { id:'w1', name:'General Medicine', dept:'Internal Medicine', total:40, occupied:27 },
+    { id:'w2', name:'Orthopedics',      dept:'Musculoskeletal',   total:20, occupied:14 },
+    { id:'w3', name:'Pediatrics',       dept:'Child Health',      total:25, occupied:16 },
+    { id:'w4', name:'Cardiology',       dept:'Heart & Vascular',  total:18, occupied:15 },
+    { id:'w5', name:'ICU',              dept:'Critical Care',     total:12, occupied:10 },
+    { id:'w6', name:'Maternity',        dept:'Obstetrics',        total:22, occupied:12 },
+    { id:'w7', name:'Emergency Obs.',   dept:'Emergency',         total:15, occupied:9  },
+  ];
+
+  let dateOffset = 0;
+
+  function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
+  function seededDelta(seed){
+    const x = Math.sin(seed) * 10000;
+    const frac = x - Math.floor(x);
+    return Math.floor(frac * 7) - 3;
+  }
+  function projectedOccupied(ward, offsetDays){
+    if(offsetDays === 0) return ward.occupied;
+    const seed = (ward.id.charCodeAt(1) * 97) + offsetDays * 13.7;
+    const drift = seededDelta(seed) + (offsetDays > 5 ? -1 : 0);
+    return clamp(ward.occupied + drift, 0, ward.total);
+  }
+  function fmtDate(d){ return d.toLocaleDateString('en-IN', { day:'2-digit', month:'short' }); }
+  function dowLabel(d){ return d.toLocaleDateString('en-IN', { weekday:'short' }); }
+  function next14Days(){
+    const arr = [];
+    for(let i=0;i<14;i++){ const d = new Date(); d.setDate(d.getDate()+i); arr.push(d); }
+    return arr;
+  }
+  function freeClass(free, total){
+    const ratio = free/total;
+    if(free === 0) return 'full';
+    if(ratio < 0.15) return 'low';
+    return 'ok';
+  }
+
+  function render(){
+    const dates = next14Days();
+    const offset = dateOffset;
+    const isLive = offset === 0;
+
+    document.getElementById('modeLabel').textContent = isLive ? 'Today · live count' : `Projected · ${fmtDate(dates[offset])}`;
+
+    document.getElementById('dateScroller').innerHTML = dates.map((d,i)=>`
+      <button class="date-pill ${i===offset?'active':''}" data-offset="${i}">
+        <span class="dow">${dowLabel(d)}</span>
+        <span class="dnum">${fmtDate(d)}</span>
+      </button>
+    `).join('');
+
+    document.getElementById('projectionFlag').innerHTML = !isLive
+      ? `<div class="projection-flag"><span class="dot"></span>Estimate only predicted by our Advanced ML model,subject to change*</div>`
+      : '';
+
+    document.getElementById('wardCards').innerHTML = WARDS.map(w=>{
+      const occ = isLive ? w.occupied : projectedOccupied(w, offset);
+      const free = w.total - occ;
+      const pct = Math.round((occ / w.total) * 100);
+      const cls = freeClass(free, w.total);
+      return `
+      <div class="ward-card">
+        <div class="ward-dept">${w.dept}</div>
+        <div class="free-hero ${cls}">${free}</div>
+        <div class="free-label">bed${free === 1 ? '' : 's'} free</div>
+        <div class="capacity-track"><div class="capacity-fill ${cls}" data-target="${pct}"></div></div>
+        <div class="ward-name">${w.name}</div>
+        <div class="ward-total">${occ} / ${w.total} occupied</div>
+      </div>`;
+    }).join('');
+
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      document.querySelectorAll('.capacity-fill').forEach(el => { el.style.width = el.dataset.target + '%'; });
+    }));
+
+    revealCards();
+  }
+
+  function revealCards(){
+    const cards = document.querySelectorAll('.ward-card');
+    if(reduceMotion){ cards.forEach(c => c.classList.add('in-view')); return; }
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if(entry.isIntersecting){
+          setTimeout(() => entry.target.classList.add('in-view'), i * 55);
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    cards.forEach(c => io.observe(c));
+  }
+
+  document.addEventListener('click', (e)=>{
+    const pill = e.target.closest('.date-pill');
+    if(!pill) return;
+    dateOffset = parseInt(pill.dataset.offset, 10);
+    render();
+  });
+
+  render();
+</script>
+
+</body>
+</html>
