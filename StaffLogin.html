@@ -314,9 +314,9 @@
     errorBox.classList.remove('show');
 
     if(account.role === 'receptionist'){
-      window.location.href = 'receptionist.html';
+      window.location.href = 'Receptionist.html';
     } else {
-      window.location.href = 'doctor.html';
+      window.location.href = 'Doctor.html?user=' + encodeURIComponent(account.username);
     }
   });
 </script>
